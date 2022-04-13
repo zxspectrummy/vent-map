@@ -1,0 +1,42 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class QuadTree {
+    -Region area
+    -List<Node> nodes
+    -List<QuadTree> quadtrees
+    --
+    +QuadTree(Region area)
+    --
+    +boolean insertPoint(Point point)
+    +List<Node> search(Region region)
+    +List<Node> search(Region region, int threshold)
+}
+
+class Node{
+-Point points
+-int ventCount
+--
++Node(Point point)
+--
++void incrementVentCount()
+}
+
+class Region {
+-int x1,y1,x2,y2
+--
++Region(x1,y1,x2,y2)
+--
++boolean containsPoint(Point point)
++boolean doesOverlap(Region region)
+}
+
+
+QuadTree "1" --o "0..4" QuadTree
+Region "1" --o "1" QuadTree
+Node "0..MAX_POINTS" --* "1" QuadTree
+Point "*" --o "1" LineSegment
+
+Point "1" --o "1" Node
+
+@enduml

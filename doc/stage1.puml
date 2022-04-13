@@ -1,0 +1,38 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Point {
+    -int x
+    -int y
+    --
+    +Point(x,y)
+    --
+    +int compareTo(Point point)
+    +boolean equals(Object o)
+    +int hashCode()
+    +String toString()
+}
+
+class OccupancyGridMap {
+   -Map<Point, Integer> gridMap
+   --
+   +OccupancyGridMap(List<LineSegment> segments)
+   --
+   +int getOccupiedCellCount(int threshold)
+   +void insertSegment(LineSegment segment)
+}
+
+class LineSegment {
+    -Point start
+    -Point end
+    -List<Point> points
+    --
+    +LineSegment(int x1,int y1, int x2, int y2)
+    +LineSegment(Point a, Point b)
+    --
+    -List<Point> populateIntermediatePoints():
+}
+
+Point "*" --o "1" OccupancyGridMap
+Point "*" --o "1" LineSegment
+@enduml

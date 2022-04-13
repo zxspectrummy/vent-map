@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title></title>
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/white.css" id="theme" />
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css" />
+	<link rel="stylesheet" href="css/layout.css" />
+	<link rel="stylesheet" href="plugin/customcontrols/style.css">
+	<link rel="stylesheet" href="plugin/chalkboard/style.css">
+
+
+    <script defer src="dist/fontawesome/all.min.js"></script>
+
+	<script type="text/javascript">
+		var forgetPop = true;
+		function onPopState(event) {
+			if(forgetPop){
+				forgetPop = false;
+			} else {
+				parent.postMessage(event.target.location.href, "app://obsidian.md");
+			}
+        }
+		window.onpopstate = onPopState;
+		window.onmessage = event => {
+			if(event.data == "reload"){
+				window.document.location.reload();
+			}
+			forgetPop = true;
+		}
+
+		function fitElements(){
+			const itemsToFit = document.getElementsByClassName('fitText');
+			for (const item in itemsToFit) {
+				if (Object.hasOwnProperty.call(itemsToFit, item)) {
+					var element = itemsToFit[item];
+					fitElement(element,1, 1000);
+					element.classList.remove('fitText');
+				}
+			}
+		}
+
+		function fitElement(element, start, end){
+
+			const size = (end + start) / 2;
+			element.style.fontSize = `${size}px`;
+
+			if(Math.abs(start - end) < 1){
+				return;
+			}
+
+			if(element.scrollHeight > element.offsetHeight){
+				fitElement(element, start, size);
+			} else {
+				fitElement(element, size, end);
+			}		
+		}
+
+
+		document.onreadystatechange = () => {
+			fitElements();
+			if (document.readyState === 'complete') {
+				if (window.location.href.indexOf("?export") != -1){
+					parent.postMessage(event.target.location.href, "app://obsidian.md");
+				}
+				if (window.location.href.indexOf("print-pdf") != -1){
+					let stateCheck = setInterval(() => {
+						clearInterval(stateCheck);
+						window.print();
+					}, 250);
+				}
+			}
+	};
+
+
+        </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template">
+<!-- .slide: data-background-image="https://upload.wikimedia.org/wikipedia/commons/a/aa/Champagne_vent_white_smokers.jpg" -->
+# Hydrothermal Venture
+## Case Study
+</script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+### Problem statement
+</div>
+<div class="has-light-background reset-margin" style="background-color: #75CFB8; padding: 0 30px; box-sizing: border-box; position: absolute; left: 0px; top: 105px; height: 273px; min-height: 273px; width: 432px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-evenly" align="left">
+
+#### Given
+vent segments defined by their start and end points
+</div>
+
+<div class="has-light-background fragment reset-margin" style="background-color: #BBDFC8; padding: 0 30px; box-sizing: border-box; position: absolute; left: 441.59999999999997px; top: 105px; height: 273px; min-height: 273px; width: 528px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-evenly" data-fragment-index="1" align="left">
+
+#### Task
+calculate number of intersections,
+propose design and data structures
+</div>
+<div class="has-light-background fragment reset-margin" style="background-color: #F0E5D8; padding: 0 30px; box-sizing: border-box; position: absolute; left: 0px; top: 385px; height: 273px; min-height: 273px; width: 499.2px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-evenly" data-fragment-index="2" align="left">
+
+#### Questions
+- field size<!-- .element: class="fragment" data-fragment-index="1" -->
+- vent points count vs field size<!-- .element: class="fragment" data-fragment-index="2" -->
+</div>
+
+<div class="has-light-background fragment reset-margin" style="background-color: #FFC478; padding: 0 30px; box-sizing: border-box; position: absolute; left: 508.79999999999995px; top: 385px; height: 273px; min-height: 273px; width: 460.79999999999995px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-evenly" data-fragment-index="3" align="left">
+
+#### Further Concerns
+- sloping lines support<!-- .element: class="fragment" data-fragment-index="3" -->
+- extensibility<!-- .element: class="fragment" data-fragment-index="4" -->
+</div>
+
+<aside class="notes"><p>Anzahl der Schnittpunkte berechnen
+wie viele Punkte im Vergleich zur Gesamtgröße</p>
+<!-- .slide: class="drop" --></aside></script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## Assumptions
+</div>
+<div class="reset-margin" style="position: absolute; left: 0px; top: 280px; height: 140px; min-height: 140px; width: 960px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly" >
+
+- all the information about the vents is valuable and we want to store it
+- we are dealing a real-world scenario, i.e.<!-- .element: class="fragment" data-fragment-index="1" -->
+	- sparse data distributed over a large map <!-- .element: class="fragment" data-fragment-index="2" -->
+	- no specific domain knowledge is required for the task, i.e. no specialized products/frameworks will be considered<!-- .element: class="fragment" data-fragment-index="3" -->
+</div>
+
+
+<aside class="notes"><p>ich habe folgende Annahmen getroffen</p>
+<!-- .slide: class="drop" --></aside></script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+##  Naive approach
+</div>
+
+<div class="fragment reset-margin" style="position: absolute; left: 0px; top: 56px; height: 350px; min-height: 350px; width: 576px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly" data-fragment-index="1">
+
+<p style="line-height: 0" class="reset-paragraph"><img src="https://vents-data.interridge.org/sites/vents-data.interridge.org/files/global2_vents_land_masked_Robinson_watermark_m.jpg" alt="global2_vents_land_masked_Robinson_watermark_m.jpg (interridge.org)" ></img></p>
+
+</div> 
+<div class="fragment reset-margin" style="position: absolute; left: 624px; top: 105px; height: 350px; min-height: 350px; width: 364.8px; display: flex; flex-direction: column; align-items: center; justify-content: space-between" data-fragment-index="1">
+
+if the map is large and highly sparsed let's only store the cells containing data
+</div>
+<div class="fragment reset-margin" style="position: absolute; left: 0px; top: 525px; height: 0px; min-height: 0px; width: 960px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly" data-fragment-index="2">
+
+#### ALGORITHM
+* import start and end points
+* sort start and end coordinates first by X then by Y
+* populate intermediate points, by iterating over x1..x2 or y1..y2
+* add all the points in a hashmap
+	* increment vent count if point already exists
+</div> 
+<aside class="notes"><p>angesichts der Annahmen
+Wenn die Karte groß und sehr spärlich ist, speichern wir nur die Zellen, die Daten enthalten
+Fügen Sie alle Punkte in einer Hashmap hinzu, erhöhen Sie die Anzahl der Entlüftungen, wenn der Punkt bereits vorhanden ist</p>
+<!-- .slide: class="drop" --></aside></script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## Class Diagram
+</div>
+<split even>
+<div class="" style="" >
+
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220329122640.png" alt="" style="width: 90%px"></img></p>
+
+</div> 
+</split>
+<!-- .slide: class="drop" -->
+</script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## Implementation
+</div>
+<div class="fragment reset-margin" style="position: absolute; left: 0px; top: 70px; height: 560px; min-height: 560px; width: 960px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly" data-fragment-index="1">
+
+	private List<Point> populateIntermediatePoints() {  
+	    if ((start.getY() != end.getY()) &&  
+	        (start.getX() != end.getX()))  
+	        return Collections.emptyList();  
+	    return IntStream.rangeClosed(start.getX(), end.getX())  
+			.boxed()  
+			.flatMap(x ->  
+				IntStream.rangeClosed(start.getY(), end.getY())  
+					.mapToObj(y -> new Point(x, y))  
+			)  
+			.collect(Collectors.toList());  
+	}
+</div> <!-- .element: class="fragment fade-in-then-out" -->
+<div class="fragment reset-margin" style="position: absolute; left: 0px; top: 70px; height: 560px; min-height: 560px; width: 960px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly" data-fragment-index="2">
+
+	public OccupancyGrid(List<LineSegment> segments) {  
+	    this.gridMap = new HashMap<>();  
+	    for (LineSegment segment : segments) {  
+	        this.insertSegment(segment);  
+	    }  
+	}  
+	public void insertSegment(LineSegment segment) {  
+	    for (Point point : segment.points) {  
+	        gridMap.merge(point, 1, Integer::sum);  
+	    }  
+	}
+	public long getOccupiedCellCount(int threshold) {  
+	    return gridMap.values().stream()
+		    .filter(n -> n >= threshold).count();  
+	}
+</div>
+<!-- .slide: class="drop" -->
+</script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## Result
+</div>
+<div class="reset-margin" style="position: absolute; left: 0px; top: 140px; height: 350px; min-height: 350px; width: 576px; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly" >
+
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220328171836.png" alt="" ></img></p>
+
+</div>
+<div class="reset-margin" style="position: absolute; left: 480px; top: 70px; height: 140px; min-height: 140px; width: 384px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-evenly" align="left">
+
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220328171710.png" alt="" ></img></p>
+
+	
+</div>
+<!-- .slide: class="drop" -->
+</script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## Into the deep
+</div>
+
+🤔 What if the data is expected to be used by a underwater vehicle to assure safe navigation?
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220329120114.png" alt="" ></img></p>
+
+
+How to determine if there are points in given region?
+<!-- .slide: class="drop" -->
+</script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## QuadTrees
+</div>
+
+<split even>
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220329120305.png" alt="" ></img></p>
+
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220329124323.png" alt="" ></img></p>
+
+</split>
+<!-- .slide: class="drop" -->
+</script></section><section  data-markdown><script type="text/template"><div class="" style="" >
+
+## Class diagram
+</div>
+<p style="line-height: 0" class="reset-paragraph"><img src="Pasted image 20220329135454.png" alt="" style="width: 700px"></img></p>
+
+<!-- .slide: class="drop" -->
+</script></section><section  data-markdown><script type="text/template">Questions?
+
+
+
+
+
+
+
+
+</script></section></div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/zoom/zoom.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/math/math.js"></script>
+	<script src="plugin/mermaid/mermaid.js"></script>
+	<script src="plugin/menu/menu.js"></script>
+	<script src="plugin/customcontrols/plugin.js"></script>
+	<script src="plugin/chalkboard/plugin.js"></script>
+
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath.MathJax3,
+		  RevealMermaid,
+		  RevealCustomControls,
+		  RevealMenu,
+		  RevealChalkboard, 
+        ],
+
+		mathjax3: {
+			mathjax: 'plugin/math/mathjax/tex-mml-chtml.js',
+		},
+
+		customcontrols: {
+			controls: [
+				{id: 'toggle-overview',
+				title: 'Toggle overview (O)',
+				icon: '<i class="fa fa-th"></i>',
+				action: 'Reveal.toggleOverview();'
+				},
+				{ icon: '<i class="fa fa-pen-square"></i>',
+				title: 'Toggle chalkboard (B)',
+				action: 'RevealChalkboard.toggleChalkboard();'
+				},
+				{ icon: '<i class="fa fa-pen"></i>',
+				title: 'Toggle notes canvas (C)',
+				action: 'RevealChalkboard.toggleNotesCanvas();'
+				},
+			]
+		},
+		menu: {
+			loadIcons: false
+		}
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"width":960,"height":700,"margin":0.1,"controls":true,"progress":true,"slideNumber":true,"transition":"slide","transitionSpeed":"default"}, queryOptions);
+    </script>
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+</html>
