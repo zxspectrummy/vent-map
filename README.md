@@ -10,7 +10,7 @@ A case-study coding challenge based on https://adventofcode.com/2021/day/5
 5. During the interview we will extend the quiz on the fly so you have the chance to present  your quiz solving skills on the spot.
 
 ## Documentation
-[Presentation for the decision-making process](doc/index.html)
+[Presentation for the decision-making process](https://zxspectrummy.github.io/vent-map/)
 
 ## Getting Started
 
